@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable name="listItem" type="com.khizhny.mobox.ListItem"/>
     </data>
+
     <android.support.constraint.ConstraintLayout
-                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                 xmlns:tools="http://schemas.android.com/tools"
-                                                 android:layout_width="match_parent"
-                                                 android:layout_height="wrap_content"
-                                                 android:background="@drawable/selector_row">
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:background="@drawable/selector_row">
 
         <TextView
             android:id="@+id/small_text"

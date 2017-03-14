@@ -11,7 +11,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,10 +21,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.khizhny.mobox.databinding.RowLayoutBinding;
 
@@ -95,7 +92,6 @@ public class MainActivity extends Activity {
     class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapter.ItemViewHolder>
             implements ItemTouchHelperAdapter    {
 
-        RowLayoutBinding binding;
 
          class ItemViewHolder extends RecyclerView.ViewHolder implements
                 ItemTouchHelperViewHolder   {
@@ -136,8 +132,7 @@ public class MainActivity extends Activity {
 
         @Override
         public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-            binding = RowLayoutBinding.inflate(layoutInflater, parent, false);
+
             // create a new view
             View rowView = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.row_layout , parent, false);
@@ -147,9 +142,7 @@ public class MainActivity extends Activity {
 
         @Override
         public void onBindViewHolder(final ItemViewHolder holder, int position) {
-
-            binding.setListItem(MyApplication.itemsList.get(position));
-
+             holder.mTextView.setText(MyApplication.itemsList.get(position).name);
             // downloading images
             String url = MyApplication.itemsList.get(position).url;
             ImageRequest imageRequest = new ImageRequest(url,holder.mImageView,true);
