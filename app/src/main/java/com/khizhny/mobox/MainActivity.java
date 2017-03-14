@@ -11,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,6 +26,8 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.khizhny.mobox.databinding.RowLayoutBinding;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -92,6 +95,8 @@ public class MainActivity extends Activity {
     class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapter.ItemViewHolder>
             implements ItemTouchHelperAdapter    {
 
+        RowLayoutBinding binding;
+
          class ItemViewHolder extends RecyclerView.ViewHolder implements
                 ItemTouchHelperViewHolder   {
              private TextView mTextView;
@@ -119,20 +124,20 @@ public class MainActivity extends Activity {
         @Override
         public void onItemMove(int fromPosition, int toPosition) {
             ListItem prev = MyApplication.itemsList.remove(fromPosition);
-            MyApplication.itemsList.add(toPosition > fromPosition ? toPosition - 1 : toPosition, prev);
+            MyApplication.itemsList.add(toPosition > fromPosition ? toPosition  : toPosition-1, prev);
             notifyItemMoved(fromPosition, toPosition);
         }
 
         @Override
         public void onItemDismiss(int position) {
             MyApplication.itemsList.remove(position);
-            notifyDataSetChanged();
+            notifyItemRemoved(position);
         }
 
-        // Create new views (invoked by the layout manager)
         @Override
         public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
+            LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+            binding = RowLayoutBinding.inflate(layoutInflater, parent, false);
             // create a new view
             View rowView = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.row_layout , parent, false);
@@ -141,9 +146,9 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public void onBindViewHolder(final ItemViewHolder holder, final int position) {
+        public void onBindViewHolder(final ItemViewHolder holder, int position) {
 
-            holder.mTextView.setText(MyApplication.itemsList.get(position).name);
+            binding.setListItem(MyApplication.itemsList.get(position));
 
             // downloading images
             String url = MyApplication.itemsList.get(position).url;
@@ -155,6 +160,7 @@ public class MainActivity extends Activity {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    int position=holder.getPosition();
                     Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
                     intent.putExtra("name",MyApplication.itemsList.get(position).name);
                     intent.putExtra("url", MyApplication.itemsList.get(position).url);
@@ -174,20 +180,6 @@ public class MainActivity extends Activity {
             return MyApplication.itemsList.size();
         }
 
-        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.DOWN | ItemTouchHelper.UP) {
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                Toast.makeText(MainActivity.this, "on Move", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                Toast.makeText(MainActivity.this, "on Swiped ", Toast.LENGTH_SHORT).show();
-                //Remove swiped item from list and notify the RecyclerView
-            }
-        };
     }
 
     /**
