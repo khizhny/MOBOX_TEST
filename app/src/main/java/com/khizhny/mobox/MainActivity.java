@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,8 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
+
+import static com.khizhny.mobox.TimeService.BROADCAST_ACTION;
 
 public class MainActivity extends Activity {
 
@@ -75,7 +78,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(TimeService.BROADCAST_ACTION);
+        filter.addAction(BROADCAST_ACTION);
         registerReceiver(receiver, filter);
         super.onResume();
     }
@@ -85,17 +88,12 @@ public class MainActivity extends Activity {
         super.onPause();
         unregisterReceiver(receiver);
     }
-/*
-    @Override
-    public void update(Observable o, Object arg) {
-        Toast.makeText(this, String.valueOf("activity observer "), Toast.LENGTH_SHORT).show();
-    }*/
 
     class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapter.ItemViewHolder>
             implements ItemTouchHelperAdapter    {
 
          class ItemViewHolder extends RecyclerView.ViewHolder implements
-                ItemTouchHelperViewHolder {
+                ItemTouchHelperViewHolder   {
              private TextView mTextView;
              private ImageView mImageView;
              private ItemViewHolder(View v) {
@@ -113,6 +111,7 @@ public class MainActivity extends Activity {
             public void onItemClear() {
                 itemView.setBackgroundColor(0);
             }
+
         }
 
 
@@ -127,12 +126,13 @@ public class MainActivity extends Activity {
         @Override
         public void onItemDismiss(int position) {
             MyApplication.itemsList.remove(position);
-            notifyItemRemoved(position);
+            notifyDataSetChanged();
         }
 
         // Create new views (invoked by the layout manager)
         @Override
         public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
             // create a new view
             View rowView = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.row_layout , parent, false);
@@ -165,9 +165,7 @@ public class MainActivity extends Activity {
                     // start the new activity
                     startActivity(intent, options.toBundle());
                 }
-            });/**/
-
-            // define swipe
+            });
 
         }
 
@@ -251,29 +249,29 @@ public class MainActivity extends Activity {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(BROADCAST_ACTION)) {
+                Dialog timeDialog = new Dialog(MainActivity.this);
+                timeDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+                timeDialog.setContentView(getLayoutInflater().inflate(R.layout.time_alert, null));
+                //setting time
+                TextView tv = (TextView) timeDialog.findViewById(R.id.time_text);
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                String currentDateandTime = sdf.format(new Date());
+                tv.setText("Текущее время - " + currentDateandTime);
 
-            Dialog timeDialog = new Dialog(MainActivity.this);
-            timeDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-            timeDialog.setContentView(getLayoutInflater().inflate(R.layout.time_alert, null));
-            //setting time
-            TextView tv = (TextView) timeDialog.findViewById(R.id.time_text);
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-            String currentDateandTime = sdf.format(new Date());
-            tv.setText("Текущее время - "+currentDateandTime);
+                //settimg image
+                ImageView iv = (ImageView) timeDialog.findViewById(R.id.random_image);
 
-            //settimg image
-            ImageView iv =(ImageView) timeDialog.findViewById(R.id.random_image);
+                //Start random image download
+                Random rnd = new Random();
+                int randomIndex = rnd.nextInt(MyApplication.itemsList.size());
+                String randomUrl = MyApplication.itemsList.get(randomIndex).url;
+                ImageRequest imageRequest = new ImageRequest(randomUrl, iv, false);
+                ImageDownloaderTask task = new ImageDownloaderTask();
+                task.execute(imageRequest);
 
-            //Start random image download
-            Random rnd = new Random();
-            int randomIndex = rnd.nextInt(MyApplication.itemsList.size());
-            String randomUrl = MyApplication.itemsList.get(randomIndex).url;
-            ImageRequest imageRequest = new ImageRequest(randomUrl,iv,false);
-            ImageDownloaderTask task  = new ImageDownloaderTask();
-            task.execute(imageRequest);
-
-            timeDialog.show();
-
+                timeDialog.show();
+            }
         }
     };
 
